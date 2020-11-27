@@ -33,6 +33,6 @@ function draw() {
     }
 
     //Constrain ship position
-    player.position.x = constrain(player.position.x, 16,width-16);
-    player.position.y = constrain(player.position.y, 16, height-16);
+    player.position.x = constrain(player.position.x, player.width/2,width-player.width/2);
+    player.position.y = constrain(player.position.y, player.height/2, height-player.height/2);
 }
