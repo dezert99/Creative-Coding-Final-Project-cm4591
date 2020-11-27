@@ -32,5 +32,7 @@ function draw() {
         player.setSpeed(0);
     }
 
-    
+    //Constrain ship position
+    player.position.x = constrain(player.position.x, 16,width-16);
+    player.position.y = constrain(player.position.y, 16, height-16);
 }
