@@ -14,6 +14,7 @@ function draw() {
     
     drawSprites();
 
+    //Handle rotation of ship
     if (abs(player.position.x - mouseX) > 10 && abs(player.position.y - mouseY) > 10) {
         var x = player.position.x - mouseX
         var y = player.position.y - mouseY
@@ -21,6 +22,7 @@ function draw() {
         player.rotation = angle + 270
     }
 
+    // Basic Movement
     if(keyWentDown("w")) {
         console.log("player.direction",player.rotation);
         player.setSpeed(1.5,player.rotation-90);
@@ -29,4 +31,6 @@ function draw() {
         console.log("stopping movement");
         player.setSpeed(0);
     }
+
+    
 }
