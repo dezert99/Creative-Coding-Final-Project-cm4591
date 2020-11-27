@@ -5,7 +5,7 @@ async function setup() {
     player = createSprite(width/2,height/2,32,32)
     player.addAnimation("floating",'./assets/player_32x32.png');
 
-    bullet = createSprite(width/2,200,4,4);
+    bullet = createSprite(width/2,-200,4,4);
     bullet.addAnimation("floating", './assets/bullet.png');
 }
 
@@ -19,11 +19,14 @@ function draw() {
         var y = player.position.y - mouseY
         var angle = Math.atan2(y, x) * 180 / Math.PI
         player.rotation = angle + 270
-      }
-}
+    }
 
-
-// //Check for chance mods
-function keyPressed() {
-  
+    if(keyWentDown("w")) {
+        console.log("player.direction",player.rotation);
+        player.setSpeed(1.5,player.rotation-90);
+    }
+    else if(keyWentDown("s")) {
+        console.log("stopping movement");
+        player.setSpeed(0);
+    }
 }
