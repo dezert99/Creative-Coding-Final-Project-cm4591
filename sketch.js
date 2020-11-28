@@ -2,6 +2,8 @@ var player, bullet;
 
 var shot = false;
 var cantPickup = false;
+var enemies = new  p5.prototype.Group();
+
 async function setup() {
     createCanvas(700, 600);
     
@@ -10,6 +12,19 @@ async function setup() {
 
     bullet = createSprite(width/2,-200,4,4);
     bullet.addAnimation("floating", './assets/bullet.png');
+    let enemy = createSprite(width/2,200, 32,32);
+    enemy.addAnimation("idle",'./assets/enemy2_32x32.png')
+    enemies.add(enemy);
+    enemy = createSprite(width/2-100,400, 32,32);
+    enemy.addAnimation("idle",'./assets/enemy2_32x32.png')
+    enemies.add(enemy);
+}
+
+function enemyHit(enemy, bullet){
+    enemy.remove();
+    bullet.position.x = (Math.random()*width-20) + 10;
+    bullet.position.y = (Math.random()*height-20) + 10;
+    bullet.setSpeed(0);
 }
 
 function draw() {
@@ -54,9 +69,18 @@ function draw() {
         bullet.setSpeed(0);
     }
 
+    //Handle pickup of bullet
     if(!cantPickup && shot && dist(player.position.x, player.position.y, bullet.position.x, bullet.position.y) <40 && player.overlap(bullet)) {
         bullet.position.x = 1000;
         shot = false;
     }
 
+    // Enemy hit detection
+    enemies.collide(enemies);
+    enemies.forEach(enemy => {
+        enemy.attractionPoint(.2,player.position.x,player.position.y);
+        enemy.overlap(bullet, enemyHit);
+        enemy.maxSpeed = 1;
+    });
+    
 }
