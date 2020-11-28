@@ -3,6 +3,7 @@ var player, bullet;
 var shot = false;
 var cantPickup = false;
 var enemies = new  p5.prototype.Group();
+var gameover = false;
 
 async function setup() {
     createCanvas(700, 600);
@@ -27,10 +28,28 @@ function enemyHit(enemy, bullet){
     bullet.setSpeed(0);
 }
 
+function playerHit() {
+    enemies.removeSprites();
+    player.remove();
+    gameover = true;
+}
+
+function drawGameover(){
+    textSize(32);
+    fill(255);
+    text('Game over!', width/2-(textWidth('Game over!')/2), height/2);
+}
+
 function draw() {
     background(0);
     
     drawSprites();
+
+    if(gameover) {
+        console.log("calling");
+        drawGameover();
+        return;
+    }
 
     //Handle rotation of ship
     if (abs(player.position.x - mouseX) > 10 && abs(player.position.y - mouseY) > 10) {
@@ -80,6 +99,7 @@ function draw() {
     enemies.forEach(enemy => {
         enemy.attractionPoint(.2,player.position.x,player.position.y);
         enemy.overlap(bullet, enemyHit);
+        enemy.overlap(player, playerHit);
         enemy.maxSpeed = 1;
     });
     
