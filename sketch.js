@@ -1,4 +1,7 @@
 var player, bullet;
+
+var shot = false;
+var cantPickup = false;
 async function setup() {
     createCanvas(700, 600);
     
@@ -32,7 +35,28 @@ function draw() {
         player.setSpeed(0);
     }
 
+    // Handle shooting if enter is pressed
+    if(keyWentDown(13) && !shot){
+        bullet.position.x = player.position.x;
+        bullet.position.y = player.position.y;
+        bullet.setSpeed(3,player.rotation-90);
+        shot = true;
+        cantPickup = true;
+        setInterval(() => {cantPickup = false},1000);
+    }
+
     //Constrain ship position
     player.position.x = constrain(player.position.x, player.width/2,width-player.width/2);
     player.position.y = constrain(player.position.y, player.height/2, height-player.height/2);
+
+    //Constrain bullet position
+    if(bullet.position.x <= 4 || bullet.position.x >= width-4 || bullet.position.y <= 4 || bullet.position.y >= height-4){
+        bullet.setSpeed(0);
+    }
+
+    if(!cantPickup && shot && dist(player.position.x, player.position.y, bullet.position.x, bullet.position.y) <40 && player.overlap(bullet)) {
+        bullet.position.x = 1000;
+        shot = false;
+    }
+
 }
