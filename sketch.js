@@ -3,6 +3,7 @@ var player, bullet;
 var shot = false;
 var cantPickup = false;
 var enemies = new  p5.prototype.Group();
+var asteroids = new p5.prototype.Group();
 var gameover = false;
 var level = 0;
 var levelSpawns = [
@@ -10,16 +11,19 @@ var levelSpawns = [
         mini: 1,
         boss: 0,
         megaboss: 0,
+        asteroid: 2,
     },
     {
         mini: 2,
         boss: 0,
         megaboss: 0,
+        asteroid: 0,
     },
     {
         mini: 4,
         boss: 0,
         megaboss: 0,
+        asteroid: 0,
     },
 ]
 
@@ -36,6 +40,14 @@ async function setup() {
         let enemy = createSprite(Math.random()*width,Math.random()*height*.3, 32,32);
         enemy.addAnimation("idle",'./assets/enemy2_32x32.png')
         enemies.add(enemy);
+    }
+    let numAsteroids = levelSpawns[0].asteroid;
+    for(let i =0; i < numAsteroids; i++) {
+        let asteroid = createSprite(Math.random()*width,Math.random()*height*.3, 44,38);
+        asteroid.addAnimation("idle",'./assets/asteroid-r.png')
+        asteroid.rotationSpeed = .2;
+        asteroid.setSpeed(.2,Math.random()*1200);
+        asteroids.add(asteroid);
     }
 }
 
