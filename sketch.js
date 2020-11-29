@@ -4,6 +4,7 @@ var shot = false;
 var cantPickup = false;
 var enemies = new  p5.prototype.Group();
 var asteroids = new p5.prototype.Group();
+
 var gameover = false;
 var level = 0;
 var levelSpawns = [
@@ -25,7 +26,29 @@ var levelSpawns = [
         megaboss: 0,
         asteroid: 0,
     },
-]
+];
+
+// Adds num amount of enemies and either a random position or a specified positon
+function addEnemy(num, x, y) {
+    for(let i =0; i < num; i++) {
+        let enemy = createSprite(x ? x :Math.random()*width,y ? y : Math.random()*height*.3, 32,32);
+        enemy.addAnimation("idle",'./assets/enemy2_32x32.png')
+        enemy.setCollider("circle",0,0,16)
+        enemies.add(enemy);
+    } 
+}
+
+// Adds num amount of asteroids and either a random position or a specified positon
+function addAsteroid(num,x, y){
+    for(let i =0; i < num; i++) {
+        let asteroid = createSprite(x ? x : Math.random()*width,y ? y : Math.random()*height*.3, 44,38);
+        asteroid.addAnimation("idle",'./assets/asteroid-r.png')
+        asteroid.rotationSpeed = .2;
+        asteroid.setSpeed(.2,Math.random()*1200);
+        asteroid.setCollider("circle",0,0,16);
+        asteroids.add(asteroid);
+    }
+}
 
 async function setup() {
     createCanvas(700, 600);
@@ -35,20 +58,10 @@ async function setup() {
 
     bullet = createSprite(width/2,-200,4,4);
     bullet.addAnimation("floating", './assets/bullet.png');
-    let numEnemies = levelSpawns[0].mini;
-    for(let i =0; i < numEnemies; i++) {
-        let enemy = createSprite(Math.random()*width,Math.random()*height*.3, 32,32);
-        enemy.addAnimation("idle",'./assets/enemy2_32x32.png')
-        enemies.add(enemy);
-    }
-    let numAsteroids = levelSpawns[0].asteroid;
-    for(let i =0; i < numAsteroids; i++) {
-        let asteroid = createSprite(Math.random()*width,Math.random()*height*.3, 44,38);
-        asteroid.addAnimation("idle",'./assets/asteroid-r.png')
-        asteroid.rotationSpeed = .2;
-        asteroid.setSpeed(.2,Math.random()*1200);
-        asteroids.add(asteroid);
-    }
+    addEnemy(levelSpawns[0].mini);
+    addAsteroid(levelSpawns[0].asteroid);
+    
+    player.setCollider("circle",0,0,16)
 }
 
 function enemyHit(enemy, bullet){
@@ -130,7 +143,21 @@ function draw() {
         enemy.attractionPoint(.2,player.position.x,player.position.y);
         enemy.overlap(bullet, enemyHit);
         enemy.overlap(player, playerHit);
+        enemy.debug = mouseIsPressed;
         enemy.maxSpeed = 1;
     });
+
+    
+    player.debug = mouseIsPressed;
+    asteroids.forEach(asteroid => {
+        asteroid.debug = mouseIsPressed;
+        if(asteroid.collide(player)){
+            playerHit();
+        }
+        if(dist(asteroid.position.x, asteroid.position.y, player.position.x, player.position.y) < 150){
+            console.log("attracting player")
+            player.attractionPoint(.01, asteroid.position.x,asteroid.position.y);
+        }
+    })
     
 }
