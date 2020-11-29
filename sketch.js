@@ -3,6 +3,8 @@ var player, bullet;
 var shot = false;
 var cantPickup = false;
 var enemies = new  p5.prototype.Group();
+var bosses = new  p5.prototype.Group();
+var megabosses = new  p5.prototype.Group();
 var asteroids = new p5.prototype.Group();
 
 var gameover = false;
@@ -23,6 +25,12 @@ var levelSpawns = [
     {
         mini: 4,
         boss: 0,
+        megaboss: 0,
+        asteroid: 0,
+    },
+    {
+        mini: 2,
+        boss: 1,
         megaboss: 0,
         asteroid: 0,
     },
@@ -50,6 +58,33 @@ function addAsteroid(num,x, y){
     }
 }
 
+// Adds num amount of asteroids and either a random position or a specified positon
+function addBoss(num,x, y){
+    for(let i =0; i < num; i++) {
+        let boss = createSprite(x ? x : Math.random()*width,y ? y : Math.random()*height*.3, 64,64);
+        boss.addAnimation("idle",'./assets/boss.png')
+        // boss.setSpeed(.2,Math.random()*1200);
+        boss.setCollider("circle",0,0,32);
+        bosses.add(boss);
+    }
+}
+
+
+function newRound(){
+    let currLevel = levelSpawns[++level];
+
+    clearBoard(true);
+    addAsteroid(currLevel.asteroids);
+    addEnemy(currLevel.mini);
+    addBoss(currLevel.boss);
+}
+
+function resetBullet(){
+    bullet.position.x = -1000;
+    shot = false;
+    cantPickup = false;
+}
+
 async function setup() {
     createCanvas(700, 600);
     
@@ -58,6 +93,8 @@ async function setup() {
 
     bullet = createSprite(width/2,-200,4,4);
     bullet.addAnimation("floating", './assets/bullet.png');
+
+    //Spawn inital enemies and astroids.
     addEnemy(levelSpawns[0].mini);
     addAsteroid(levelSpawns[0].asteroid);
     
@@ -69,6 +106,21 @@ function enemyHit(enemy, bullet){
     bullet.position.x = (Math.random()*width-20) + 10;
     bullet.position.y = (Math.random()*height-20) + 10;
     bullet.setSpeed(0);
+    levelSpawns[level].mini--;
+
+    //Check for win state after decrementing level spawns
+    if(checkForWin()){
+        newRound();
+    }
+}
+
+//Checks the current level spawns to see if there are any enemies left
+function checkForWin(){
+    let currLevel = levelSpawns[level];
+    if(currLevel.mini === 0 && currLevel.boss === 0 && currLevel.megaboss === 0) {
+        return true;
+    }
+    return false;
 }
 
 function playerHit() {
@@ -81,6 +133,18 @@ function drawGameover(){
     textSize(32);
     fill(255);
     text('Game over!', width/2-(textWidth('Game over!')/2), height/2);
+}
+
+function clearBoard(movePlayer){
+    asteroids.removeSprites();
+    enemies.removeSprites();
+    resetBullet();
+
+    if(movePlayer) {
+        player.position.x = width/2;
+        player.position.y = height*.75;
+        player.setSpeed(0);
+    }
 }
 
 function draw() {
