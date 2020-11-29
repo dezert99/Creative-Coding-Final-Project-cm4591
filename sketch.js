@@ -4,6 +4,24 @@ var shot = false;
 var cantPickup = false;
 var enemies = new  p5.prototype.Group();
 var gameover = false;
+var level = 0;
+var levelSpawns = [
+    {
+        mini: 1,
+        boss: 0,
+        megaboss: 0,
+    },
+    {
+        mini: 2,
+        boss: 0,
+        megaboss: 0,
+    },
+    {
+        mini: 4,
+        boss: 0,
+        megaboss: 0,
+    },
+]
 
 async function setup() {
     createCanvas(700, 600);
@@ -13,12 +31,12 @@ async function setup() {
 
     bullet = createSprite(width/2,-200,4,4);
     bullet.addAnimation("floating", './assets/bullet.png');
-    let enemy = createSprite(width/2,200, 32,32);
-    enemy.addAnimation("idle",'./assets/enemy2_32x32.png')
-    enemies.add(enemy);
-    enemy = createSprite(width/2-100,400, 32,32);
-    enemy.addAnimation("idle",'./assets/enemy2_32x32.png')
-    enemies.add(enemy);
+    let numEnemies = levelSpawns[0].mini;
+    for(let i =0; i < numEnemies; i++) {
+        let enemy = createSprite(Math.random()*width,Math.random()*height*.3, 32,32);
+        enemy.addAnimation("idle",'./assets/enemy2_32x32.png')
+        enemies.add(enemy);
+    }
 }
 
 function enemyHit(enemy, bullet){
