@@ -21,19 +21,19 @@ var levelSpawns = [
         mini: 2,
         boss: 0,
         megaboss: 0,
-        asteroid: 0,
+        asteroid: 3,
     },
     {
         mini: 4,
         boss: 0,
         megaboss: 0,
-        asteroid: 0,
+        asteroid: 3,
     },
     {
         mini: 2,
         boss: 1,
         megaboss: 0,
-        asteroid: 0,
+        asteroid: 4,
     },
 ];
 
@@ -82,7 +82,7 @@ function newRound(){
     let currLevel = levelSpawns[++level];
 
     clearBoard(true);
-    addAsteroid(currLevel.asteroids);
+    addAsteroid(currLevel.asteroid);
     addEnemy(currLevel.mini);
     addBoss(currLevel.boss);
 }
@@ -214,7 +214,7 @@ function draw() {
         bullet.setSpeed(3,player.rotation-90);
         shot = true;
         cantPickup = true;
-        setInterval(() => {cantPickup = false},1000);
+        setInterval(() => {cantPickup = false},1500);
     }
 
     //Constrain ship position
