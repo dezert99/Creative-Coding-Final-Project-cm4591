@@ -8,6 +8,7 @@ var megabosses = new  p5.prototype.Group();
 var asteroids = new p5.prototype.Group();
 
 var gameover = false;
+var won = false;
 var level = 0;
 var levelSpawns = [
     {
@@ -71,6 +72,13 @@ function addBoss(num,x, y){
 
 
 function newRound(){
+    if(level+1 === levelSpawns.length){
+        console.log("finished");
+        clearBoard();
+        player.remove();
+        won = true;
+        return;
+    }
     let currLevel = levelSpawns[++level];
 
     clearBoard(true);
@@ -114,6 +122,19 @@ function enemyHit(enemy, bullet){
     }
 }
 
+function bossHit(boss, bullet){
+    boss.remove();
+    bullet.position.x = (Math.random()*width-20) + 10;
+    bullet.position.y = (Math.random()*height-20) + 10;
+    bullet.setSpeed(0);
+    levelSpawns[level].boss--;
+
+    //Check for win state after decrementing level spawns
+    if(checkForWin()){
+        newRound();
+    }
+}
+
 //Checks the current level spawns to see if there are any enemies left
 function checkForWin(){
     let currLevel = levelSpawns[level];
@@ -133,6 +154,12 @@ function drawGameover(){
     textSize(32);
     fill(255);
     text('Game over!', width/2-(textWidth('Game over!')/2), height/2);
+}
+
+function drawWin(){
+    textSize(32);
+    fill(255);
+    text('Winner!', width/2-(textWidth('Winner!')/2), height/2);
 }
 
 function clearBoard(movePlayer){
@@ -155,6 +182,10 @@ function draw() {
     if(gameover) {
         console.log("calling");
         drawGameover();
+        return;
+    }
+    else if(won) {
+        drawWin();
         return;
     }
 
@@ -211,6 +242,13 @@ function draw() {
         enemy.maxSpeed = 1;
     });
 
+    bosses.forEach(boss => {
+        // boss.attractionPoint(.2,player.position.x,player.position.y);
+        boss.overlap(bullet, bossHit);
+        boss.overlap(player, playerHit);
+        boss.debug = mouseIsPressed;
+        boss.maxSpeed = 1;
+    });
     
     player.debug = mouseIsPressed;
     asteroids.forEach(asteroid => {
