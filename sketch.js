@@ -304,7 +304,7 @@ function draw() {
         enemy.overlap(bullet, enemyHit);
         enemy.overlap(player, playerHit);
         enemy.debug = mouseIsPressed;
-        enemy.maxSpeed = 1;
+        enemy.maxSpeed = 1.5;
     });
 
     // -------------- Shooter movement and collision ---------------
