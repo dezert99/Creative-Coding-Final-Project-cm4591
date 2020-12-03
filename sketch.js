@@ -12,13 +12,15 @@ var asteroids = new p5.prototype.Group();
 var enemyBullets = new p5.prototype.Group();
 
 var shooterTimer = 0;
+var bossTimer = 0;
+var bossPatterns = ["4points","8points","round"]
 
 var gameover = false;
 var won = false;
 var level = 0;
 var levelSpawns = [
     {
-        mini: 1,
+        mini: 0,
         boss: 1,
         shoot:0,
         megaboss: 0,
@@ -93,11 +95,51 @@ function addShootEnemy(num,x, y){
 }
 
 function addEnemyBullet(x,y,speed,direction){
+    console.log("called",direction);
     let bullet = createSprite(x,y, 4,4);
     bullet.addAnimation("idle",'./assets/enemy-bullet.png')
     bullet.setSpeed(speed,direction);
     bullet.setCollider("circle",0,0,2);
     enemyBullets.add(bullet);
+}
+
+function addBossBullets(x,y, pattern){
+    let num = Math.floor(random(5,15));
+    console.log(num);
+    let spacing = 360/num;
+    let d = 0;
+    if(pattern == "double"){
+        for(let i = 0; i <num; i++){
+            addEnemyBullet(x,y,2,d);
+            d = d + spacing;
+        }
+        setTimeout(() => {
+            d = random(0,360);
+            for(let i = 0; i <num; i++){
+                addEnemyBullet(x,y,2,d);
+                d = d + spacing;
+            }
+        }, 1500)
+    }
+    else if(pattern === "wild"){
+        for(let i = 0; i <num; i++){
+            addEnemyBullet(x,y,2,d);
+            d = d + spacing;
+        }
+        let dup = Math.floor(random(1,3));
+        for(let i = 0; i< dup; i++){
+            setTimeout(() => {
+                d = random(0,360);
+                num = Math.floor(random(5,15));
+                for(let i = 0; i <num; i++){
+                    addEnemyBullet(x,y,2,d);
+                    d = d + spacing;
+                }
+            }, 1500+(1500*i));
+        }
+       
+    }
+   
 }
 
 // -------------------- Collision functions --------------------
@@ -351,7 +393,7 @@ function draw() {
     // -------------- Boss movement and collision ---------------
     let shieldHealth = levelSpawns[level].mini*20;
     bosses.forEach(boss => {
-        boss.attractionPoint(.2,player.position.x,player.position.y);
+        // boss.attractionPoint(.2,player.position.x,player.position.y);
         boss.overlap(bullet, (boss,bullet) => bossHit(boss,bullet,shieldHealth === 0));
 
         boss.overlap(player, playerHit);
@@ -359,7 +401,12 @@ function draw() {
         ellipse(boss.position.x,boss.position.y,80,80)
         boss.debug = mouseIsPressed;
         boss.maxSpeed = .3;
+
+        if(bossTimer === 0){
+            addBossBullets(boss.position.x,boss.position.y, "wild");
+        }
     });
+    bossTimer = (bossTimer+1)%500;
     
     player.debug = mouseIsPressed;
 
@@ -380,6 +427,10 @@ function draw() {
         bullet.debug = mouseIsPressed;
         if(bullet.collide(player)) {
             playerHit();
+        }
+
+        if(bullet.position.x > width+5 || bullet.position.x < -5 || bullet.position.y > height+ 10 || bullet.position.y < -10){
+            bullet.remove();
         }
     });
 }
