@@ -9,12 +9,14 @@ var megabosses = new  p5.prototype.Group();
 var asteroids = new p5.prototype.Group();
 var enemyBullets = new p5.prototype.Group();
 
+var shooterTimer = 0;
+
 var gameover = false;
 var won = false;
 var level = 0;
 var levelSpawns = [
     {
-        mini: 0,
+        mini: 1,
         boss: 0,
         shoot:1,
         megaboss: 0,
@@ -43,7 +45,7 @@ var levelSpawns = [
     },
 ];
 
-// Spawn sprite functions
+// -------------------- Spawn sprite functions --------------------
 
 // Adds num amount of enemies and either a random position or a specified positon
 function addEnemy(num, x, y) {
@@ -89,10 +91,14 @@ function addShootEnemy(num,x, y){
 }
 
 function addEnemyBullet(x,y,speed,direction){
-
+    let bullet = createSprite(x,y, 4,4);
+    bullet.addAnimation("idle",'./assets/enemy-bullet.png')
+    bullet.setSpeed(speed,direction);
+    bullet.setCollider("circle",0,0,2);
+    enemyBullets.add(bullet);
 }
 
-// Collision functions
+// -------------------- Collision functions --------------------
 
 function enemyHit(enemy, bullet){
     enemy.remove();
@@ -112,7 +118,7 @@ function shooterHit(enemy, bullet){
     bullet.position.x = (Math.random()*width-20) + 10;
     bullet.position.y = (Math.random()*height-20) + 10;
     bullet.setSpeed(0);
-    levelSpawns[level].mini--;
+    levelSpawns[level].shoot--;
 
     //Check for win state after decrementing level spawns
     if(checkForWin()){
@@ -139,7 +145,7 @@ function playerHit() {
     gameover = true;
 }
 
-//Game state functions 
+// -------------------- Game state functions --------------------
 function newRound(){
     if(level+1 === levelSpawns.length){
         console.log("finished");
@@ -166,13 +172,21 @@ function resetBullet(){
 //Checks the current level spawns to see if there are any enemies left
 function checkForWin(){
     let currLevel = levelSpawns[level];
-    if(currLevel.mini === 0 && currLevel.boss === 0 && currLevel.megaboss === 0) {
-        return true;
-    }
-    return false;
+    let notDone = false;
+    Object.keys(currLevel).forEach(key => {
+        console.log("key",key)
+        if(key != "asteroid" && currLevel[key] != 0){
+            console.log("setting for",key, currLevel[key]);
+            notDone = true;
+        }
+    })
+    console.log("notDone",notDone);
+    return !notDone;
+    // if(currLevel.mini === 0 && currLevel.boss === 0 && currLevel.megaboss === 0 ) {
+    //     return true;
+    // }
+    // return true;
 }
-
-
 
 function drawGameover(){
     textSize(32);
@@ -197,9 +211,11 @@ function clearBoard(movePlayer){
         player.position.y = height*.75;
         player.setSpeed(0);
     }
+
+    shooterTimer = 0;
 }
 
-// Game
+// -------------------- Game --------------------
 async function setup() {
     createCanvas(700, 600);
     
@@ -279,8 +295,10 @@ function draw() {
         shot = false;
     }
 
+    // -------------- Minion movement and collision ---------------
     // Enemy hit detection
     enemies.collide(enemies);
+    enemies.collide(shootenemies);
     enemies.forEach(enemy => {
         enemy.attractionPoint(.2,player.position.x,player.position.y);
         enemy.overlap(bullet, enemyHit);
@@ -289,14 +307,14 @@ function draw() {
         enemy.maxSpeed = 1;
     });
 
-    enemies.collide(shootenemies);
+    // -------------- Shooter movement and collision ---------------
     shootenemies.collide(shootenemies);
     shootenemies.forEach(shooter => {
         shooter.attractionPoint(.2,player.position.x,player.position.y);
         shooter.overlap(bullet, shooterHit);
         shooter.overlap(player, playerHit);
         shooter.debug = mouseIsPressed;
-        shooter.maxSpeed = .1;
+        shooter.maxSpeed = .5;
 
         //Handle rotation of ship
         if (abs(shooter.position.x - player.position.x) > 10 && abs(shooter.position.y - player.position.y) > 10) {
@@ -306,11 +324,13 @@ function draw() {
             // console.log("rot",shooter.rotation, angle);
             shooter.rotation = angle + 270
         }
-        if(Math.random()*1000 < 10){
-            let enemyBullet = createSprite()
+        if(shooterTimer === 0){
+            addEnemyBullet(shooter.position.x, shooter.position.y, 1,shooter.rotation-90);
         }
+        
     })
-
+    shooterTimer = (shooterTimer+1)%300;
+    // -------------- Boss movement and collision ---------------
     bosses.forEach(boss => {
         // boss.attractionPoint(.2,player.position.x,player.position.y);
         boss.overlap(bullet, bossHit);
@@ -320,6 +340,8 @@ function draw() {
     });
     
     player.debug = mouseIsPressed;
+
+    // -------------- Asteroid movement and collision ---------------
     asteroids.forEach(asteroid => {
         asteroid.debug = mouseIsPressed;
         if(asteroid.collide(player)){
@@ -330,5 +352,12 @@ function draw() {
             player.attractionPoint(.01, asteroid.position.x,asteroid.position.y);
         }
     })
-    
+
+    // -------------- Enemy bullet collision ---------------
+    enemyBullets.forEach(bullet => {
+        bullet.debug = mouseIsPressed;
+        if(bullet.collide(player)) {
+            playerHit();
+        }
+    });
 }
