@@ -2,6 +2,8 @@ var player, bullet;
 
 var shot = false;
 var cantPickup = false;
+var canKill = true;
+
 var enemies = new  p5.prototype.Group();
 var shootenemies = new p5.prototype.Group();
 var bosses = new  p5.prototype.Group();
@@ -17,8 +19,8 @@ var level = 0;
 var levelSpawns = [
     {
         mini: 1,
-        boss: 0,
-        shoot:1,
+        boss: 1,
+        shoot:0,
         megaboss: 0,
         asteroid: 0,
     },
@@ -101,15 +103,18 @@ function addEnemyBullet(x,y,speed,direction){
 // -------------------- Collision functions --------------------
 
 function enemyHit(enemy, bullet){
-    enemy.remove();
-    bullet.position.x = (Math.random()*width-20) + 10;
-    bullet.position.y = (Math.random()*height-20) + 10;
-    bullet.setSpeed(0);
-    levelSpawns[level].mini--;
-
-    //Check for win state after decrementing level spawns
-    if(checkForWin()){
-        newRound();
+    if(canKill){
+        enemy.remove();
+        bullet.position.x = (Math.random()*width-20) + 10;
+        bullet.position.y = (Math.random()*height-20) + 10;
+        bullet.setSpeed(0);
+        levelSpawns[level].mini--;
+        canKill = false;
+    
+        //Check for win state after decrementing level spawns
+        if(checkForWin()){
+            newRound();
+        }
     }
 }
 
@@ -119,6 +124,7 @@ function shooterHit(enemy, bullet){
     bullet.position.y = (Math.random()*height-20) + 10;
     bullet.setSpeed(0);
     levelSpawns[level].shoot--;
+    canKill = false;
 
     //Check for win state after decrementing level spawns
     if(checkForWin()){
@@ -126,16 +132,19 @@ function shooterHit(enemy, bullet){
     }
 }
 
-function bossHit(boss, bullet){
-    boss.remove();
+function bossHit(boss, bullet, shieldDown){
+    canKill = false;
     bullet.position.x = (Math.random()*width-20) + 10;
     bullet.position.y = (Math.random()*height-20) + 10;
     bullet.setSpeed(0);
-    levelSpawns[level].boss--;
+    
+    if(shieldDown){
+        boss.remove();
+        levelSpawns[level].boss--;
 
-    //Check for win state after decrementing level spawns
-    if(checkForWin()){
-        newRound();
+        if(checkForWin()){
+            newRound();
+        }
     }
 }
 
@@ -167,6 +176,7 @@ function resetBullet(){
     bullet.position.x = -1000;
     shot = false;
     cantPickup = false;
+    canKill = true;
 }
 
 //Checks the current level spawns to see if there are any enemies left
@@ -229,6 +239,7 @@ async function setup() {
     addEnemy(levelSpawns[0].mini);
     addAsteroid(levelSpawns[0].asteroid);
     addShootEnemy(levelSpawns[0].shoot);
+    addBoss(levelSpawns[0].boss);
     
     player.setCollider("circle",0,0,16)
 }
@@ -293,6 +304,7 @@ function draw() {
     if(!cantPickup && shot && dist(player.position.x, player.position.y, bullet.position.x, bullet.position.y) <40 && player.overlap(bullet)) {
         bullet.position.x = 1000;
         shot = false;
+        canKill = true;
     }
 
     // -------------- Minion movement and collision ---------------
@@ -304,7 +316,13 @@ function draw() {
         enemy.overlap(bullet, enemyHit);
         enemy.overlap(player, playerHit);
         enemy.debug = mouseIsPressed;
-        enemy.maxSpeed = 1.5;
+        let alpha = 40+sin(frameCount/15)*30
+        stroke(133, 255, 253,alpha);
+        enemy.maxSpeed = 1.2;
+
+        bosses.forEach(boss => {
+            line(enemy.position.x,enemy.position.y,boss.position.x, boss.position.y);            
+        });
     });
 
     // -------------- Shooter movement and collision ---------------
@@ -331,12 +349,16 @@ function draw() {
     })
     shooterTimer = (shooterTimer+1)%300;
     // -------------- Boss movement and collision ---------------
+    let shieldHealth = levelSpawns[level].mini*20;
     bosses.forEach(boss => {
-        // boss.attractionPoint(.2,player.position.x,player.position.y);
-        boss.overlap(bullet, bossHit);
+        boss.attractionPoint(.2,player.position.x,player.position.y);
+        boss.overlap(bullet, (boss,bullet) => bossHit(boss,bullet,shieldHealth === 0));
+
         boss.overlap(player, playerHit);
+        fill(133, 255, 253,shieldHealth);
+        ellipse(boss.position.x,boss.position.y,80,80)
         boss.debug = mouseIsPressed;
-        boss.maxSpeed = 1;
+        boss.maxSpeed = .3;
     });
     
     player.debug = mouseIsPressed;
