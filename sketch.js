@@ -13,7 +13,7 @@ var enemyBullets = new p5.prototype.Group();
 
 var shooterTimer = 0;
 var bossTimer = 0;
-var bossPatterns = ["4points","8points","round"]
+var bossPatterns = ["single","double","wild","blast"];
 
 var gameover = false;
 var won = false;
@@ -21,9 +21,9 @@ var level = 0;
 var levelSpawns = [
     {
         mini: 0,
-        boss: 1,
+        boss: 0,
         shoot:0,
-        megaboss: 0,
+        megaboss: 1,
         asteroid: 0,
     },
     {
@@ -84,6 +84,15 @@ function addBoss(num,x, y){
     }
 }
 
+function addMegaBoss(num,x, y){
+    for(let i =0; i < num; i++) {
+        let megaboss = createSprite(x ? x : Math.random()*width,y ? y : Math.random()*height*.3, 96,96);
+        megaboss.addAnimation("idle",'./assets/megaboss.png')
+        megaboss.setCollider("circle",0,0,48);
+        megabosses.add(megaboss);
+    }
+}
+
 function addShootEnemy(num,x, y){
     for(let i =0; i < num; i++) {
         let shooty = createSprite(x ? x : Math.random()*width,y ? y : Math.random()*height*.3, 32,32);
@@ -108,7 +117,13 @@ function addBossBullets(x,y, pattern){
     console.log(num);
     let spacing = 360/num;
     let d = 0;
-    if(pattern == "double"){
+    if(pattern === "single"){
+        for(let i = 0; i <num; i++){
+            addEnemyBullet(x,y,2,d);
+            d = d + spacing;
+        }
+    }
+    else if(pattern == "double"){
         for(let i = 0; i <num; i++){
             addEnemyBullet(x,y,2,d);
             d = d + spacing;
@@ -137,7 +152,34 @@ function addBossBullets(x,y, pattern){
                 }
             }, 1500+(1500*i));
         }
-       
+    }
+    else if(pattern === "blast") {
+        let dx = x- player.position.x;
+        let dy = y - player.position.y;
+        var angle = Math.atan2(dy, dx) * 180 / Math.PI
+        angle -= 180;
+        num = 4;
+        d = angle-25; //Direction
+        addEnemyBullet(x,y,2,d);
+        for(let i = 0; i <num; i++){
+            setTimeout((direction) => {
+                addEnemyBullet(x,y,2,direction);
+            }, 600+(600*i), d);
+        }
+        d = angle;
+        addEnemyBullet(x,y,2,d);
+        for(let i = 0; i <num; i++){
+            setTimeout((direction) => {
+                addEnemyBullet(x,y,2,direction);
+            }, 600+(600*i),d);
+        }
+        d = angle + 25;
+        addEnemyBullet(x,y,2,d);
+        for(let i = 0; i <num; i++){
+            setTimeout((direction) => {
+                addEnemyBullet(x,y,2,direction);
+            }, 600+(600*i),d);
+        }
     }
    
 }
@@ -183,6 +225,21 @@ function bossHit(boss, bullet, shieldDown){
     if(shieldDown){
         boss.remove();
         levelSpawns[level].boss--;
+
+        if(checkForWin()){
+            newRound();
+        }
+    }
+}
+function megaBossHit(boss, bullet, shieldDown){
+    canKill = false;
+    bullet.position.x = (Math.random()*width-20) + 10;
+    bullet.position.y = (Math.random()*height-20) + 10;
+    bullet.setSpeed(0);
+    
+    if(shieldDown){
+        boss.remove();
+        levelSpawns[level].megaboss--;
 
         if(checkForWin()){
             newRound();
@@ -282,6 +339,7 @@ async function setup() {
     addAsteroid(levelSpawns[0].asteroid);
     addShootEnemy(levelSpawns[0].shoot);
     addBoss(levelSpawns[0].boss);
+    addMegaBoss(levelSpawns[0].megaboss);
     
     player.setCollider("circle",0,0,16)
 }
@@ -403,7 +461,7 @@ function draw() {
         boss.maxSpeed = .3;
 
         if(bossTimer === 0){
-            addBossBullets(boss.position.x,boss.position.y, "wild");
+            addBossBullets(boss.position.x,boss.position.y, bossPatterns[Math.floor(random(0,bossPatterns.length))]);
         }
     });
     bossTimer = (bossTimer+1)%500;
