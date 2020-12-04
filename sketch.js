@@ -1,4 +1,4 @@
-var player, bullet;
+var player, bullet, snd_bg, snd_playershootm, snd_explosion;
 
 var shot = false;
 var cantPickup = false;
@@ -15,6 +15,7 @@ var shooterTimer = 0;
 var bossTimer = 0;
 var bossPatterns = ["single","double","wild","blast"];
 var megaBossTimer = 0;
+var playerSpeed = 0;
 
 var gameover = false;
 var won = false;
@@ -200,9 +201,6 @@ function addBossBullets(x,y, pattern){
 function enemyHit(enemy, bullet){
     if(canKill){
         enemy.remove();
-        bullet.position.x = (Math.random()*width-20) + 10;
-        bullet.position.y = (Math.random()*height-20) + 10;
-        bullet.setSpeed(0);
         levelSpawns[level].mini--;
         canKill = false;
     
@@ -210,58 +208,70 @@ function enemyHit(enemy, bullet){
         if(checkForWin()){
             newRound();
         }
+        snd_explosion.play();
     }
+    bullet.position.x = (Math.random()*width-20) + 10;
+    bullet.position.y = (Math.random()*height-20) + 10;
+    bullet.setSpeed(0);
 }
 
 function shooterHit(enemy, bullet){
-    enemy.remove();
+    if(canKill){
+        enemy.remove();
+        levelSpawns[level].shoot--;
+        canKill = false;
+        //Check for win state after decrementing level spawns
+        if(checkForWin()){
+            newRound();
+        }
+        snd_explosion.play();
+    }
     bullet.position.x = (Math.random()*width-20) + 10;
     bullet.position.y = (Math.random()*height-20) + 10;
     bullet.setSpeed(0);
-    levelSpawns[level].shoot--;
-    canKill = false;
-
-    //Check for win state after decrementing level spawns
-    if(checkForWin()){
-        newRound();
-    }
+    
 }
 
 function bossHit(boss, bullet, shieldDown){
-    canKill = false;
-    bullet.position.x = (Math.random()*width-20) + 10;
-    bullet.position.y = (Math.random()*height-20) + 10;
-    bullet.setSpeed(0);
-    
-    if(shieldDown){
+    if(shieldDown && canKill){
         boss.remove();
         levelSpawns[level].boss--;
+        snd_explosion.play();
 
         if(checkForWin()){
             newRound();
         }
     }
-}
-function megaBossHit(boss, bullet, shieldDown){
+
     canKill = false;
     bullet.position.x = (Math.random()*width-20) + 10;
     bullet.position.y = (Math.random()*height-20) + 10;
     bullet.setSpeed(0);
-    
+}
+function megaBossHit(boss, bullet, shieldDown){
     if(shieldDown){
         boss.remove();
         levelSpawns[level].megaboss--;
+        snd_explosion.play();
 
         if(checkForWin()){
             newRound();
         }
     }
+
+    canKill = false;
+    bullet.position.x = (Math.random()*width-20) + 10;
+    bullet.position.y = (Math.random()*height-20) + 10;
+    bullet.setSpeed(0);
+    
+   
 }
 
 function playerHit() {
     enemies.removeSprites();
     player.remove();
     gameover = true;
+    snd_explosion.play();
 }
 
 // -------------------- Game state functions --------------------
@@ -336,9 +346,26 @@ function clearBoard(movePlayer){
 }
 
 // -------------------- Game --------------------
+function preload() {
+    // we have included both an .ogg file and an .mp3 file
+    soundFormats('ogg', 'mp3', 'wav');
+  
+    // if mp3 is not supported by this browser,
+    // loadSound will load the ogg file
+    // we have included with our sketch
+    snd_bg = loadSound('./assets/Battleinthestars.ogg');
+    snd_playershoot = loadSound("./assets/pshoot.wav");
+    snd_playershoot.setVolume(1);
+
+    snd_explosion = loadSound("./assets/explosion.wav");
+    snd_explosion.setVolume(5);
+
+  }
+
+
 async function setup() {
     createCanvas(700, 600);
-    
+    snd_bg.loop();
     player = createSprite(width/2,height/2,32,32)
     player.addAnimation("floating",'./assets/player_32x32.png');
 
@@ -383,13 +410,19 @@ function draw() {
     }
 
     // Basic Movement
-    if(keyWentDown("w")) {
-        console.log("player.direction",player.rotation);
-        player.setSpeed(1.5,player.rotation-90);
+    if(keyDown("w")) {
+        playerSpeed +=.05;
+        if(playerSpeed > 2){
+            playerSpeed = 2;
+        }
+        player.setSpeed(playerSpeed,player.rotation-90);
     }
-    else if(keyWentDown("s")) {
-        console.log("stopping movement");
-        player.setSpeed(0);
+    else if(keyDown("s")) {
+        playerSpeed -= .05;
+        if(playerSpeed < 0){
+            playerSpeed = 0;
+        }
+        player.setSpeed(playerSpeed);
     }
 
     // Handle shooting if enter is pressed
@@ -399,7 +432,8 @@ function draw() {
         bullet.setSpeed(3,player.rotation-90);
         shot = true;
         cantPickup = true;
-        setInterval(() => {cantPickup = false},1500);
+        snd_playershoot.play();
+        setTimeout(() => {cantPickup = false},1500);
     }
 
     //Constrain ship position
