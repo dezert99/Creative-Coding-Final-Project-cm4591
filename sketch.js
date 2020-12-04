@@ -14,6 +14,7 @@ var enemyBullets = new p5.prototype.Group();
 var shooterTimer = 0;
 var bossTimer = 0;
 var bossPatterns = ["single","double","wild","blast"];
+var megaBossTimer = 0;
 
 var gameover = false;
 var won = false;
@@ -21,7 +22,7 @@ var level = 0;
 var levelSpawns = [
     {
         mini: 0,
-        boss: 0,
+        boss: 1,
         shoot:0,
         megaboss: 1,
         asteroid: 0,
@@ -52,13 +53,16 @@ var levelSpawns = [
 // -------------------- Spawn sprite functions --------------------
 
 // Adds num amount of enemies and either a random position or a specified positon
-function addEnemy(num, x, y) {
+function addEnemy(num, x, y, increment) {
     for(let i =0; i < num; i++) {
         let enemy = createSprite(x ? x :Math.random()*width,y ? y : Math.random()*height*.3, 32,32);
         enemy.addAnimation("idle",'./assets/enemy2_32x32.png')
         enemy.setCollider("circle",0,0,16)
         enemies.add(enemy);
     } 
+    if(increment) {
+        levelSpawns[level].mini += num;
+    }
 }
 
 // Adds num amount of asteroids and either a random position or a specified positon
@@ -465,6 +469,24 @@ function draw() {
         }
     });
     bossTimer = (bossTimer+1)%500;
+
+     // -------------- Megaboss movement and collision ---------------
+     shieldHealth = levelSpawns[level].boss*20;
+     megabosses.forEach(megaBoss => {
+         // megaBoss.attractionPoint(.2,player.position.x,player.position.y);
+         megaBoss.overlap(bullet, (megaBoss,bullet) => megaBossHit(megaBoss,bullet,shieldHealth === 0));
+ 
+         megaBoss.overlap(player, playerHit);
+         fill(18, 255, 121,shieldHealth);
+         ellipse(megaBoss.position.x,megaBoss.position.y,120,120)
+         megaBoss.debug = mouseIsPressed;
+         megaBoss.maxSpeed = .3;
+ 
+         if(megaBossTimer === 0){
+            addEnemy(1,megaBoss.position.x,megaBoss.position.y, true);
+         }
+     });
+     megaBossTimer = (megaBossTimer+1)%1000;
     
     player.debug = mouseIsPressed;
 
