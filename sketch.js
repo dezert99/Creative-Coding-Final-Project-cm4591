@@ -21,11 +21,11 @@ var won = false;
 var level = 0;
 var levelSpawns = [
     {
-        mini: 0,
-        boss: 1,
+        mini: 3,
+        boss: 0,
         shoot:0,
-        megaboss: 1,
-        asteroid: 0,
+        megaboss: 0,
+        asteroid: 4,
     },
     {
         mini: 2,
@@ -36,17 +36,24 @@ var levelSpawns = [
     },
     {
         mini: 4,
-        boss: 0,
-        shoot:0,
+        boss: 1,
+        shoot:1,
         megaboss: 0,
         asteroid: 3,
     },
     {
         mini: 2,
         boss: 1,
-        shoot:0,
+        shoot:2,
         megaboss: 0,
-        asteroid: 4,
+        asteroid: 6,
+    },
+    {
+        mini: 2,
+        boss: 1,
+        shoot:2,
+        megaboss: 1,
+        asteroid: 6,
     },
 ];
 
@@ -455,7 +462,7 @@ function draw() {
     // -------------- Boss movement and collision ---------------
     let shieldHealth = levelSpawns[level].mini*20;
     bosses.forEach(boss => {
-        // boss.attractionPoint(.2,player.position.x,player.position.y);
+        boss.attractionPoint(.2,player.position.x,player.position.y);
         boss.overlap(bullet, (boss,bullet) => bossHit(boss,bullet,shieldHealth === 0));
 
         boss.overlap(player, playerHit);
