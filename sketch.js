@@ -463,6 +463,11 @@ function draw() {
         ellipse(boss.position.x,boss.position.y,80,80)
         boss.debug = mouseIsPressed;
         boss.maxSpeed = .3;
+        let alpha = 40+sin(frameCount/15)*30
+        stroke(18, 255, 121,alpha);
+        megabosses.forEach(megaBoss => {
+            line(megaBoss.position.x,megaBoss.position.y,boss.position.x, boss.position.y);    
+        })
 
         if(bossTimer === 0){
             addBossBullets(boss.position.x,boss.position.y, bossPatterns[Math.floor(random(0,bossPatterns.length))]);
