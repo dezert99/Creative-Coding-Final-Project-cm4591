@@ -19,6 +19,7 @@ var playerSpeed = 0;
 
 var gameover = false;
 var won = false;
+var started = false;
 var level = 0;
 var levelSpawns = [
     {
@@ -203,6 +204,9 @@ function enemyHit(enemy, bullet){
         enemy.remove();
         levelSpawns[level].mini--;
         canKill = false;
+        bullet.position.x = (Math.random()*width-60) + 30;
+        bullet.position.y = (Math.random()*height-60) + 30;
+        bullet.setSpeed(0);
     
         //Check for win state after decrementing level spawns
         if(checkForWin()){
@@ -210,9 +214,12 @@ function enemyHit(enemy, bullet){
         }
         snd_explosion.play();
     }
-    bullet.position.x = (Math.random()*width-20) + 10;
-    bullet.position.y = (Math.random()*height-20) + 10;
-    bullet.setSpeed(0);
+    else {
+        canKill = false;
+        bullet.position.x = (Math.random()*width-60) + 30;
+        bullet.position.y = (Math.random()*height-60) + 30;
+        bullet.setSpeed(0);
+    }
 }
 
 function shooterHit(enemy, bullet){
@@ -220,16 +227,21 @@ function shooterHit(enemy, bullet){
         enemy.remove();
         levelSpawns[level].shoot--;
         canKill = false;
+        bullet.position.x = (Math.random()*width-60) + 30;
+        bullet.position.y = (Math.random()*height-60) + 30;
+        bullet.setSpeed(0);
         //Check for win state after decrementing level spawns
         if(checkForWin()){
             newRound();
         }
         snd_explosion.play();
     }
-    bullet.position.x = (Math.random()*width-20) + 10;
-    bullet.position.y = (Math.random()*height-20) + 10;
-    bullet.setSpeed(0);
-    
+    else{
+        canKill = false;
+        bullet.position.x = (Math.random()*width-60) + 30;
+        bullet.position.y = (Math.random()*height-60) + 30;
+        bullet.setSpeed(0);
+    }
 }
 
 function bossHit(boss, bullet, shieldDown){
@@ -238,31 +250,46 @@ function bossHit(boss, bullet, shieldDown){
         levelSpawns[level].boss--;
         snd_explosion.play();
 
+        canKill = false;
+        bullet.position.x = (Math.random()*width-60) + 30;
+        bullet.position.y = (Math.random()*height-60) + 30;
+        bullet.setSpeed(0);
+
         if(checkForWin()){
             newRound();
         }
     }
+    else {
+        canKill = false;
+        bullet.position.x = (Math.random()*width-60) + 30;
+        bullet.position.y = (Math.random()*height-60) + 30;
+        bullet.setSpeed(0);
+    }
 
-    canKill = false;
-    bullet.position.x = (Math.random()*width-20) + 10;
-    bullet.position.y = (Math.random()*height-20) + 10;
-    bullet.setSpeed(0);
+    
 }
 function megaBossHit(boss, bullet, shieldDown){
     if(shieldDown){
         boss.remove();
         levelSpawns[level].megaboss--;
         snd_explosion.play();
+        canKill = false;
+        bullet.position.x = (Math.random()*width-60) + 30;
+        bullet.position.y = (Math.random()*height-60) + 30;
+        bullet.setSpeed(0);
 
         if(checkForWin()){
             newRound();
         }
     }
+    else {
+        canKill = false;
+        bullet.position.x = (Math.random()*width-60) + 30;
+        bullet.position.y = (Math.random()*height-60) + 30;
+        bullet.setSpeed(0);
+    }
 
-    canKill = false;
-    bullet.position.x = (Math.random()*width-20) + 10;
-    bullet.position.y = (Math.random()*height-20) + 10;
-    bullet.setSpeed(0);
+    
     
    
 }
@@ -322,12 +349,23 @@ function drawGameover(){
     textSize(32);
     fill(255);
     text('Game over!', width/2-(textWidth('Game over!')/2), height/2);
+    text('Press enter to restart', width/2-(textWidth('Press enter to restart')/2), height/2+30);
 }
 
 function drawWin(){
     textSize(32);
     fill(255);
     text('Winner!', width/2-(textWidth('Winner!')/2), height/2);
+}
+
+function drawStart(){
+    textSize(32);
+    fill(255);
+    text('Welcome!', width/2-(textWidth('Welcome!')/2), 200);
+    text('Press E to shoot', width/2-(textWidth('Press E to shoot')/2), 230);
+    text('Hold W to move in the direction the ship is facing', width/2-(textWidth('Hold W to move in the direction the ship is facing')/2), 260);
+    text('Hold S to slow down', width/2-(textWidth('Hold S to slow down')/2), 290);
+    text('Press enter to start!', width/2-(textWidth('Press enter to start!')/2), 320);
 }
 
 function clearBoard(movePlayer){
@@ -366,18 +404,18 @@ function preload() {
 async function setup() {
     createCanvas(700, 600);
     snd_bg.loop();
-    player = createSprite(width/2,height/2,32,32)
+    player = createSprite(width/2,height-100,32,32)
     player.addAnimation("floating",'./assets/player_32x32.png');
 
     bullet = createSprite(width/2,-200,4,4);
     bullet.addAnimation("floating", './assets/bullet.png');
 
     //Spawn inital enemies and astroids.
-    addEnemy(levelSpawns[0].mini);
-    addAsteroid(levelSpawns[0].asteroid);
-    addShootEnemy(levelSpawns[0].shoot);
-    addBoss(levelSpawns[0].boss);
-    addMegaBoss(levelSpawns[0].megaboss);
+    // addEnemy(levelSpawns[0].mini);
+    // addAsteroid(levelSpawns[0].asteroid);
+    // addShootEnemy(levelSpawns[0].shoot);
+    // addBoss(levelSpawns[0].boss);
+    // addMegaBoss(levelSpawns[0].megaboss);
     
     player.setCollider("circle",0,0,16)
 }
@@ -390,10 +428,25 @@ function draw() {
     background(0);
     
     drawSprites();
+    if(!started){
+        drawStart();
 
+        if(keyDown("enter")){
+            addEnemy(levelSpawns[0].mini);
+            addAsteroid(levelSpawns[0].asteroid);
+            addShootEnemy(levelSpawns[0].shoot);
+            addBoss(levelSpawns[0].boss);
+            addMegaBoss(levelSpawns[0].megaboss);
+            started = true;
+        }
+        return;
+    }
     if(gameover) {
         console.log("calling");
         drawGameover();
+        if(keyDown("enter")){
+            location.reload();
+        }
         return;
     }
     else if(won) {
@@ -426,7 +479,7 @@ function draw() {
     }
 
     // Handle shooting if enter is pressed
-    if(keyWentDown(13) && !shot){
+    if(keyWentDown(69) && !shot){
         bullet.position.x = player.position.x;
         bullet.position.y = player.position.y;
         bullet.setSpeed(3,player.rotation-90);
@@ -559,4 +612,6 @@ function draw() {
             bullet.remove();
         }
     });
+
+    console.log("bullet:",bullet.position.x, bullet.position.y);
 }
