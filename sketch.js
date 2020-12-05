@@ -425,7 +425,7 @@ async function setup() {
 
 
 function draw() {
-    background(0);
+    background(255);
     
     drawSprites();
     if(!started){
