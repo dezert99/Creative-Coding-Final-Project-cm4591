@@ -1,4 +1,4 @@
-var player, bullet, bg, snd_bg, snd_playershootm, snd_explosion;
+var player, bullet, bg, snd_bg, snd_playershootm, snd_explosion, snd_gameover, snd_win;
 
 var shot = false;
 var cantPickup = false;
@@ -328,6 +328,7 @@ function resetBullet(){
 
 //Checks the current level spawns to see if there are any enemies left
 function checkForWin(){
+    
     let currLevel = levelSpawns[level];
     let notDone = false;
     Object.keys(currLevel).forEach(key => {
@@ -338,6 +339,11 @@ function checkForWin(){
         }
     })
     console.log("notDone",notDone);
+    if(!notDone && level === levelSpawns.length-1) { //Final win condition
+        won = true;
+        clearBoard(true);
+        return false;
+    }
     return !notDone;
     // if(currLevel.mini === 0 && currLevel.boss === 0 && currLevel.megaboss === 0 ) {
     //     return true;
@@ -373,6 +379,7 @@ function clearBoard(movePlayer){
     asteroids.removeSprites();
     enemies.removeSprites();
     shootenemies.removeSprites();
+    enemyBullets.removeSprites();
     resetBullet();
 
     if(movePlayer) {
@@ -395,9 +402,12 @@ function preload() {
     snd_bg = loadSound('./assets/Battleinthestars.ogg');
     snd_playershoot = loadSound("./assets/pshoot.wav");
     snd_playershoot.setVolume(1);
+    snd_gameover = loadSound("./assets/gameover.ogg");
 
     snd_explosion = loadSound("./assets/explosion.wav");
     snd_explosion.setVolume(5);
+
+    snd_win = loadSound("./assets/EpicEnd.ogg");
 
     bg = loadImage('./assets/bg.png');
 
@@ -444,6 +454,11 @@ function draw() {
         return;
     }
     if(gameover) {
+        if(snd_bg.isPlaying()){
+            snd_bg.pause();
+            snd_gameover.play();
+        }
+        snd_bg.pause();
         console.log("calling");
         drawGameover();
         if(keyDown("enter")){
@@ -452,6 +467,10 @@ function draw() {
         return;
     }
     else if(won) {
+        if(snd_bg.isPlaying()){
+            snd_bg.pause();
+            snd_win.loop();
+        }
         drawWin();
         return;
     }
