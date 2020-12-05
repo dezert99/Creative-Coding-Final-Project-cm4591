@@ -17,8 +17,9 @@ var bossPatterns = ["single","double","wild","blast"];
 var megaBossTimer = 0;
 var playerSpeed = 0;
 
-var fuel = 650;
-var max_fuel = 650;
+var fuel = 1000;
+var max_fuel = 1000;
+var playerMaxSpeed = 2;
 
 var gameover = false;
 var won = false;
@@ -40,7 +41,7 @@ var levelSpawns = [
         asteroid: 3,
     },
     {
-        mini: 4,
+        mini: 3,
         boss: 1,
         shoot:1,
         megaboss: 0,
@@ -506,22 +507,18 @@ function draw() {
 
     // Basic Movement
     if(keyDown("w")) {
-        playerSpeed +=.05;
-        if(playerSpeed > 2){
-            playerSpeed = 2;
-        }
-        player.setSpeed(playerSpeed,player.rotation-90);
+      
+        player.addSpeed(.05, player.rotation-90);
+        player.limitSpeed(playerMaxSpeed);
+        // player.setSpeed(playerSpeed,player.rotation-90);
         fuel -= 1;
         if(fuel === 0){
             gameover = true;
         }
     }
     else if(keyDown("s")) {
-        playerSpeed -= .05;
-        if(playerSpeed < 0){
-            playerSpeed = 0;
-        }
-        player.setSpeed(playerSpeed);
+        let speed = player.getSpeed();
+        player.setSpeed(speed-.05);
     }
 
     // Handle shooting if enter is pressed
