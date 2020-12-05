@@ -17,6 +17,9 @@ var bossPatterns = ["single","double","wild","blast"];
 var megaBossTimer = 0;
 var playerSpeed = 0;
 
+var fuel = 650;
+var max_fuel = 650;
+
 var gameover = false;
 var won = false;
 var started = false;
@@ -317,6 +320,7 @@ function newRound(){
     addEnemy(currLevel.mini);
     addBoss(currLevel.boss);
     addShootEnemy(currLevel.shoot)
+    fuel = max_fuel;
 }
 
 function resetBullet(){
@@ -435,9 +439,26 @@ async function setup() {
     player.setCollider("circle",0,0,16)
 }
 
+function drawFuel(){
+    let barWidth = 150;
+    let drawWidth = (fuel/max_fuel) * barWidth;
+    let red = color(255, 0, 0);
+    let green = color(0,255,0);
+    let col = lerpColor(red, green, fuel/max_fuel);
+
+    textSize(12);
+    fill(255);
+    text('Fuel:', 20,20);
+    fill(0);
+    rect(25+textWidth('Fuel:'), 11, barWidth, 10);
+    fill(col);
+    rect(25+textWidth('Fuel:'), 11, drawWidth, 10);
+}
+
 
 function draw() {
     background(bg);
+    drawFuel();
     
     drawSprites();
     if(!started){
@@ -490,6 +511,10 @@ function draw() {
             playerSpeed = 2;
         }
         player.setSpeed(playerSpeed,player.rotation-90);
+        fuel -= 1;
+        if(fuel === 0){
+            gameover = true;
+        }
     }
     else if(keyDown("s")) {
         playerSpeed -= .05;
