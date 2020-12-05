@@ -204,8 +204,8 @@ function enemyHit(enemy, bullet){
         enemy.remove();
         levelSpawns[level].mini--;
         canKill = false;
-        bullet.position.x = (Math.random()*width-60) + 30;
-        bullet.position.y = (Math.random()*height-60) + 30;
+        bullet.position.x = (Math.random()*(width-60)) + 30;
+        bullet.position.y = (Math.random()*(height-60)) + 30;
         bullet.setSpeed(0);
     
         //Check for win state after decrementing level spawns
@@ -216,8 +216,8 @@ function enemyHit(enemy, bullet){
     }
     else {
         canKill = false;
-        bullet.position.x = (Math.random()*width-60) + 30;
-        bullet.position.y = (Math.random()*height-60) + 30;
+        bullet.position.x = (Math.random()*(width-60)) + 30;
+        bullet.position.y = (Math.random()*(height-60)) + 30;
         bullet.setSpeed(0);
     }
 }
@@ -227,8 +227,8 @@ function shooterHit(enemy, bullet){
         enemy.remove();
         levelSpawns[level].shoot--;
         canKill = false;
-        bullet.position.x = (Math.random()*width-60) + 30;
-        bullet.position.y = (Math.random()*height-60) + 30;
+        bullet.position.x = (Math.random()*(width-60)) + 30;
+        bullet.position.y = (Math.random()*(height-60)) + 30;
         bullet.setSpeed(0);
         //Check for win state after decrementing level spawns
         if(checkForWin()){
@@ -238,8 +238,8 @@ function shooterHit(enemy, bullet){
     }
     else{
         canKill = false;
-        bullet.position.x = (Math.random()*width-60) + 30;
-        bullet.position.y = (Math.random()*height-60) + 30;
+        bullet.position.x = (Math.random()*(width-60)) + 30;
+        bullet.position.y = (Math.random()*(height-60)) + 30;
         bullet.setSpeed(0);
     }
 }
@@ -251,8 +251,8 @@ function bossHit(boss, bullet, shieldDown){
         snd_explosion.play();
 
         canKill = false;
-        bullet.position.x = (Math.random()*width-60) + 30;
-        bullet.position.y = (Math.random()*height-60) + 30;
+        bullet.position.x = (Math.random()*(width-60)) + 30;
+        bullet.position.y = (Math.random()*(height-60)) + 30;
         bullet.setSpeed(0);
 
         if(checkForWin()){
@@ -261,8 +261,8 @@ function bossHit(boss, bullet, shieldDown){
     }
     else {
         canKill = false;
-        bullet.position.x = (Math.random()*width-60) + 30;
-        bullet.position.y = (Math.random()*height-60) + 30;
+        bullet.position.x = (Math.random()*(width-60)) + 30;
+        bullet.position.y = (Math.random()*(height-60)) + 30;
         bullet.setSpeed(0);
     }
 
@@ -274,8 +274,8 @@ function megaBossHit(boss, bullet, shieldDown){
         levelSpawns[level].megaboss--;
         snd_explosion.play();
         canKill = false;
-        bullet.position.x = (Math.random()*width-60) + 30;
-        bullet.position.y = (Math.random()*height-60) + 30;
+        bullet.position.x = (Math.random()*(width-60)) + 30;
+        bullet.position.y = (Math.random()*(height-60)) + 30;
         bullet.setSpeed(0);
 
         if(checkForWin()){
@@ -284,8 +284,8 @@ function megaBossHit(boss, bullet, shieldDown){
     }
     else {
         canKill = false;
-        bullet.position.x = (Math.random()*width-60) + 30;
-        bullet.position.y = (Math.random()*height-60) + 30;
+        bullet.position.x = (Math.random()*(width-60)) + 30;
+        bullet.position.y = (Math.random()*(height-60)) + 30;
         bullet.setSpeed(0);
     }
 
