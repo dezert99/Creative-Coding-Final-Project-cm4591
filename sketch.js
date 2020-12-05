@@ -1,4 +1,4 @@
-var player, bullet, snd_bg, snd_playershootm, snd_explosion;
+var player, bullet, bg, snd_bg, snd_playershootm, snd_explosion;
 
 var shot = false;
 var cantPickup = false;
@@ -65,7 +65,7 @@ var levelSpawns = [
 function addEnemy(num, x, y, increment) {
     for(let i =0; i < num; i++) {
         let enemy = createSprite(x ? x :Math.random()*width,y ? y : Math.random()*height*.3, 32,32);
-        enemy.addAnimation("idle",'./assets/enemy2_32x32.png')
+        enemy.addAnimation("idle",'./assets/enemy2_32x32-new.png')
         enemy.setCollider("circle",0,0,16)
         enemies.add(enemy);
     } 
@@ -363,9 +363,10 @@ function drawStart(){
     fill(255);
     text('Welcome!', width/2-(textWidth('Welcome!')/2), 200);
     text('Press E to shoot', width/2-(textWidth('Press E to shoot')/2), 230);
-    text('Hold W to move in the direction the ship is facing', width/2-(textWidth('Hold W to move in the direction the ship is facing')/2), 260);
-    text('Hold S to slow down', width/2-(textWidth('Hold S to slow down')/2), 290);
-    text('Press enter to start!', width/2-(textWidth('Press enter to start!')/2), 320);
+    text('Hold W to move in the direction', width/2-(textWidth('Hold W to move in the direction')/2), 260);
+    text('the ship is facing', width/2-(textWidth('the ship is facing')/2), 290);
+    text('Hold S to slow down', width/2-(textWidth('Hold S to slow down')/2), 320);
+    text('Press enter to start!', width/2-(textWidth('Press enter to start!')/2), 350);
 }
 
 function clearBoard(movePlayer){
@@ -398,17 +399,21 @@ function preload() {
     snd_explosion = loadSound("./assets/explosion.wav");
     snd_explosion.setVolume(5);
 
+    bg = loadImage('./assets/bg.png');
+
   }
 
 
 async function setup() {
-    createCanvas(700, 600);
+    createCanvas(640, 640);
     snd_bg.loop();
     player = createSprite(width/2,height-100,32,32)
     player.addAnimation("floating",'./assets/player_32x32.png');
 
     bullet = createSprite(width/2,-200,4,4);
     bullet.addAnimation("floating", './assets/bullet.png');
+
+    
 
     //Spawn inital enemies and astroids.
     // addEnemy(levelSpawns[0].mini);
@@ -421,11 +426,8 @@ async function setup() {
 }
 
 
-
-
-
 function draw() {
-    background(255);
+    background(bg);
     
     drawSprites();
     if(!started){
