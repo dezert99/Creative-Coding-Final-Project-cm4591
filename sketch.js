@@ -10,6 +10,7 @@ var bosses = new  p5.prototype.Group();
 var megabosses = new  p5.prototype.Group();
 var asteroids = new p5.prototype.Group();
 var enemyBullets = new p5.prototype.Group();
+var fuelPods = new p5.prototype.Group();
 
 var shooterTimer = 0;
 var bossTimer = 0;
@@ -17,9 +18,12 @@ var bossPatterns = ["single","double","wild","blast"];
 var megaBossTimer = 0;
 var playerSpeed = 0;
 
+// ----------- Player controls
 var fuel = 1000;
 var max_fuel = 1000;
 var playerMaxSpeed = 2;
+var cantStop = false;
+
 
 var gameover = false;
 var won = false;
@@ -70,12 +74,21 @@ function addEnemy(num, x, y, increment) {
     for(let i =0; i < num; i++) {
         let enemy = createSprite(x ? x :Math.random()*width,y ? y : Math.random()*height*.3, 32,32);
         enemy.addAnimation("idle",'./assets/enemy2_32x32-new.png')
-        enemy.setCollider("circle",0,0,16)
+        enemy.setCollider("circle",0,0,14)
         enemies.add(enemy);
     } 
     if(increment) {
         levelSpawns[level].mini += num;
     }
+
+}
+
+function addFuel(num,x,y){
+    for(let i =0; i < num; i++) {
+        let fuel = createSprite(x,y, 4,4);
+        fuel.addAnimation("idle",'./assets/fuel.png')
+        fuelPods.add(fuel);
+    } 
 }
 
 // Adds num amount of asteroids and either a random position or a specified positon
@@ -211,6 +224,7 @@ function enemyHit(enemy, bullet){
         bullet.position.x = (Math.random()*(width-60)) + 30;
         bullet.position.y = (Math.random()*(height-60)) + 30;
         bullet.setSpeed(0);
+        addFuel(2, enemy.position.x,enemy.position.y)
     
         //Check for win state after decrementing level spawns
         if(checkForWin()){
@@ -234,6 +248,7 @@ function shooterHit(enemy, bullet){
         bullet.position.x = (Math.random()*(width-60)) + 30;
         bullet.position.y = (Math.random()*(height-60)) + 30;
         bullet.setSpeed(0);
+        addFuel(3, enemy.position.x,enemy.position.y)
         //Check for win state after decrementing level spawns
         if(checkForWin()){
             newRound();
@@ -258,6 +273,7 @@ function bossHit(boss, bullet, shieldDown){
         bullet.position.x = (Math.random()*(width-60)) + 30;
         bullet.position.y = (Math.random()*(height-60)) + 30;
         bullet.setSpeed(0);
+        addFuel(4, boss.position.x,boss.position.y)
 
         if(checkForWin()){
             newRound();
@@ -281,6 +297,7 @@ function megaBossHit(boss, bullet, shieldDown){
         bullet.position.x = (Math.random()*(width-60)) + 30;
         bullet.position.y = (Math.random()*(height-60)) + 30;
         bullet.setSpeed(0);
+        addFuel(6, boss.position.x,boss.position.y)
 
         if(checkForWin()){
             newRound();
@@ -303,6 +320,11 @@ function playerHit() {
     player.remove();
     gameover = true;
     snd_explosion.play();
+}
+
+function collectFuel(fuelPointer, player){
+    fuel+= 50;
+    fuelPointer.remove();
 }
 
 // -------------------- Game state functions --------------------
@@ -385,6 +407,8 @@ function clearBoard(movePlayer){
     enemies.removeSprites();
     shootenemies.removeSprites();
     enemyBullets.removeSprites();
+    fuelPods.removeSprites();
+
     resetBullet();
 
     if(movePlayer) {
@@ -427,7 +451,7 @@ async function setup() {
 
     bullet = createSprite(width/2,-200,4,4);
     bullet.addAnimation("floating", './assets/bullet.png');
-
+    bullet.visible = false;
     
 
     //Spawn inital enemies and astroids.
@@ -497,6 +521,10 @@ function draw() {
         return;
     }
 
+    //Check for fuel pickup
+    fuelPods.overlap(player, collectFuel);
+
+
     //Handle rotation of ship
     if (abs(player.position.x - mouseX) > 10 && abs(player.position.y - mouseY) > 10) {
         var x = player.position.x - mouseX
@@ -508,7 +536,7 @@ function draw() {
     // Basic Movement
     if(keyDown("w")) {
       
-        player.addSpeed(.05, player.rotation-90);
+        player.addSpeed(.07, player.rotation-90);
         player.limitSpeed(playerMaxSpeed);
         // player.setSpeed(playerSpeed,player.rotation-90);
         fuel -= 1;
@@ -518,18 +546,22 @@ function draw() {
     }
     else if(keyDown("s")) {
         let speed = player.getSpeed();
-        player.setSpeed(speed-.05);
+        player.setSpeed(speed-.07);
     }
 
     // Handle shooting if enter is pressed
     if(keyWentDown(69) && !shot){
+        bullet.visible = true;
         bullet.position.x = player.position.x;
         bullet.position.y = player.position.y;
         bullet.setSpeed(3,player.rotation-90);
         shot = true;
         cantPickup = true;
+        cantStop = true
         snd_playershoot.play();
+
         setTimeout(() => {cantPickup = false},1500);
+        setTimeout(() => {cantStop = false},1000);
     }
 
     //Constrain ship position
@@ -537,13 +569,19 @@ function draw() {
     player.position.y = constrain(player.position.y, player.height/2, height-player.height/2);
 
     //Constrain bullet position
-    if(bullet.position.x <= 4 || bullet.position.x >= width-4 || bullet.position.y <= 4 || bullet.position.y >= height-4){
+    if(!cantStop && (bullet.position.x <= 4 || bullet.position.x >= width-4 || bullet.position.y <= 4 || bullet.position.y >= height-4)){
+        console.log("stopping bullet", cantStop);
+        bullet.setSpeed(0);
+    }
+    if(!cantStop && (bullet.position.x > width || bullet.position.x < 0 || bullet.position.y > height || bullet.position.y < 0)) {
+        bullet.position.x = (Math.random()*(width-60)) + 30;
+        bullet.position.y = (Math.random()*(height-60)) + 30;
         bullet.setSpeed(0);
     }
 
     //Handle pickup of bullet
     if(!cantPickup && shot && dist(player.position.x, player.position.y, bullet.position.x, bullet.position.y) <40 && player.overlap(bullet)) {
-        bullet.position.x = 1000;
+        bullet.visible = false;
         shot = false;
         canKill = true;
     }
@@ -584,7 +622,7 @@ function draw() {
             shooter.rotation = angle + 270
         }
         if(shooterTimer === 0){
-            addEnemyBullet(shooter.position.x, shooter.position.y, 1,shooter.rotation-90);
+            addEnemyBullet(shooter.position.x, shooter.position.y, 2,shooter.rotation-90);
         }
         
     })
@@ -610,6 +648,7 @@ function draw() {
             addBossBullets(boss.position.x,boss.position.y, bossPatterns[Math.floor(random(0,bossPatterns.length))]);
         }
     });
+
     bossTimer = (bossTimer+1)%500;
 
      // -------------- Megaboss movement and collision ---------------
