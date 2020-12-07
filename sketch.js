@@ -45,7 +45,7 @@ var levelSpawns = [
         asteroid: 3,
     },
     {
-        mini: 3,
+        mini: 2,
         boss: 1,
         shoot:1,
         megaboss: 0,
@@ -63,7 +63,7 @@ var levelSpawns = [
         boss: 1,
         shoot:2,
         megaboss: 1,
-        asteroid: 6,
+        asteroid: 5,
     },
 ];
 
@@ -74,7 +74,7 @@ function addEnemy(num, x, y, increment) {
     for(let i =0; i < num; i++) {
         let enemy = createSprite(x ? x :Math.random()*width,y ? y : Math.random()*height*.3, 32,32);
         enemy.addAnimation("idle",'./assets/enemy2_32x32-new.png')
-        enemy.setCollider("circle",0,0,14)
+        enemy.setCollider("circle",0,0,12)
         enemies.add(enemy);
     } 
     if(increment) {
@@ -83,6 +83,7 @@ function addEnemy(num, x, y, increment) {
 
 }
 
+// Adds fuel at position x, y
 function addFuel(num,x,y){
     for(let i =0; i < num; i++) {
         let fuel = createSprite(x,y, 4,4);
@@ -103,7 +104,7 @@ function addAsteroid(num,x, y){
     }
 }
 
-// Adds num amount of asteroids and either a random position or a specified positon
+// Adds num amount of bosses and either a random position or a specified positon
 function addBoss(num,x, y){
     for(let i =0; i < num; i++) {
         let boss = createSprite(x ? x : Math.random()*width,y ? y : Math.random()*height*.3, 64,64);
@@ -114,6 +115,7 @@ function addBoss(num,x, y){
     }
 }
 
+// Adds num amount of bosses and either a random position or a specified positon
 function addMegaBoss(num,x, y){
     for(let i =0; i < num; i++) {
         let megaboss = createSprite(x ? x : Math.random()*width,y ? y : Math.random()*height*.3, 96,96);
@@ -123,6 +125,7 @@ function addMegaBoss(num,x, y){
     }
 }
 
+// Adds num amount of shooters and either a random position or a specified positon
 function addShootEnemy(num,x, y){
     for(let i =0; i < num; i++) {
         let shooty = createSprite(x ? x : Math.random()*width,y ? y : Math.random()*height*.3, 32,32);
@@ -133,6 +136,7 @@ function addShootEnemy(num,x, y){
     }
 }
 
+// Adds enemy bullets given an x, y speed and direction
 function addEnemyBullet(x,y,speed,direction){
     console.log("called",direction);
     let bullet = createSprite(x,y, 4,4);
@@ -142,23 +146,24 @@ function addEnemyBullet(x,y,speed,direction){
     enemyBullets.add(bullet);
 }
 
+// Adds boss bullets given a pattern
 function addBossBullets(x,y, pattern){
     let num = Math.floor(random(5,15));
     console.log(num);
-    let spacing = 360/num;
+    let spacing = 360/num; // Spacing of bullet to shoot in a circle
     let d = 0;
-    if(pattern === "single"){
+    if(pattern === "single"){  // One burst in a circle
         for(let i = 0; i <num; i++){
             addEnemyBullet(x,y,2,d);
             d = d + spacing;
         }
     }
-    else if(pattern == "double"){
+    else if(pattern == "double"){ // two bursts in a circle
         for(let i = 0; i <num; i++){
             addEnemyBullet(x,y,2,d);
             d = d + spacing;
         }
-        setTimeout(() => {
+        setTimeout(() => { // delay the next volley by 1.5 seconds
             d = random(0,360);
             for(let i = 0; i <num; i++){
                 addEnemyBullet(x,y,2,d);
@@ -166,7 +171,7 @@ function addBossBullets(x,y, pattern){
             }
         }, 1500)
     }
-    else if(pattern === "wild"){
+    else if(pattern === "wild"){ // Randomized pattern of bursts
         for(let i = 0; i <num; i++){
             addEnemyBullet(x,y,2,d);
             d = d + spacing;
@@ -183,11 +188,11 @@ function addBossBullets(x,y, pattern){
             }, 1500+(1500*i));
         }
     }
-    else if(pattern === "blast") {
+    else if(pattern === "blast") { // 3 lines of bullets shot towards player
         let dx = x- player.position.x;
         let dy = y - player.position.y;
         var angle = Math.atan2(dy, dx) * 180 / Math.PI
-        angle -= 180;
+        angle -= 180; // Adjust due to direction of sprite. 
         num = 4;
         d = angle-25; //Direction
         addEnemyBullet(x,y,2,d);
@@ -216,7 +221,7 @@ function addBossBullets(x,y, pattern){
 
 // -------------------- Collision functions --------------------
 
-function enemyHit(enemy, bullet){
+function enemyHit(enemy, bullet){ // chaser hit
     if(canKill){
         enemy.remove();
         levelSpawns[level].mini--;
@@ -240,7 +245,7 @@ function enemyHit(enemy, bullet){
     }
 }
 
-function shooterHit(enemy, bullet){
+function shooterHit(enemy, bullet){ // shooter hit
     if(canKill){
         enemy.remove();
         levelSpawns[level].shoot--;
@@ -263,7 +268,7 @@ function shooterHit(enemy, bullet){
     }
 }
 
-function bossHit(boss, bullet, shieldDown){
+function bossHit(boss, bullet, shieldDown){  // boss hit
     if(shieldDown && canKill){
         boss.remove();
         levelSpawns[level].boss--;
@@ -288,7 +293,7 @@ function bossHit(boss, bullet, shieldDown){
 
     
 }
-function megaBossHit(boss, bullet, shieldDown){
+function megaBossHit(boss, bullet, shieldDown){  // megaboss hit
     if(shieldDown){
         boss.remove();
         levelSpawns[level].megaboss--;
@@ -342,7 +347,8 @@ function newRound(){
     addAsteroid(currLevel.asteroid);
     addEnemy(currLevel.mini);
     addBoss(currLevel.boss);
-    addShootEnemy(currLevel.shoot)
+    addShootEnemy(currLevel.shoot);
+    addMegaBoss(currLevel.megaboss);
     fuel = max_fuel;
 }
 
@@ -417,7 +423,7 @@ function clearBoard(movePlayer){
         player.setSpeed(0);
     }
 
-    shooterTimer = 0;
+    // shooterTimer = 0;
 }
 
 // -------------------- Game --------------------
@@ -461,7 +467,7 @@ async function setup() {
     // addBoss(levelSpawns[0].boss);
     // addMegaBoss(levelSpawns[0].megaboss);
     
-    player.setCollider("circle",0,0,16)
+    player.setCollider("circle",0,0,12)
 }
 
 function drawFuel(){
@@ -558,6 +564,7 @@ function draw() {
         shot = true;
         cantPickup = true;
         cantStop = true
+        canKill = true;
         snd_playershoot.play();
 
         setTimeout(() => {cantPickup = false},1500);
@@ -583,7 +590,6 @@ function draw() {
     if(!cantPickup && shot && dist(player.position.x, player.position.y, bullet.position.x, bullet.position.y) <40 && player.overlap(bullet)) {
         bullet.visible = false;
         shot = false;
-        canKill = true;
     }
 
     // -------------- Minion movement and collision ---------------
